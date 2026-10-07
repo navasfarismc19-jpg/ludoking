@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Ludo Party</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg1:#ffe3ee;--bg2:#d4ecff;--ink:#3a2e5a;--card:#fff;--cell:#fff;--line:#e6dcf7;--R:#ff5a6e;--G:#2fd27c;--Y:#ffc61f;--B:#47a6ff}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg1:#2b1b52;--bg2:#10284a;--ink:#fff;--card:#3b2b68;--cell:#f6f1ff;--line:#cfc2f2}}
+:root[data-theme=dark]{--bg1:#2b1b52;--bg2:#10284a;--ink:#fff;--card:#3b2b68;--cell:#f6f1ff;--line:#cfc2f2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:Fredoka,"Trebuchet MS",system-ui,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed;display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 8px 16px;overflow-x:hidden}
+h1{margin:2px 0 0;font-size:clamp(24px,5vw,36px);letter-spacing:1px}
+h1 b{display:inline-block;animation:spin 3s ease-in-out infinite}
+#msg{background:var(--card);padding:7px 18px;border-radius:999px;font-weight:700;box-shadow:0 4px 0 #0002;min-height:38px;text-align:center;max-width:94vw}
+#wrap{--bs:min(94vw,max(300px,calc(100vh - 290px)),600px);width:var(--bs);height:var(--bs)}
+#board{position:relative;width:100%;height:100%;display:grid;grid-template:repeat(15,1fr)/repeat(15,1fr);background:var(--card);border-radius:20px;border:6px solid var(--card);box-shadow:0 10px 0 #0002,0 18px 30px #0003;overflow:hidden}
+.c{background:var(--cell);border:1px solid var(--line);display:grid;place-items:center;font-size:calc(var(--bs)/15*.6);color:#c8b6f0;line-height:1}
+.R{--c:var(--R)}.G{--c:var(--G)}.Y{--c:var(--Y)}.B{--c:var(--B)}
+.k{background:var(--c);color:#fffa}
+.yard{border:0;position:relative;transition:.3s}.yard.on{animation:glow 1s ease-in-out infinite}.off{opacity:.25;filter:grayscale(.7)}
+.yin{position:absolute;inset:12%;background:var(--card);border-radius:22px;box-shadow:inset 0 4px 0 #0001}
+.yin u{position:absolute;width:20%;aspect-ratio:1;border-radius:50%;background:var(--c);opacity:.4;transform:translate(-50%,-50%)}
+.yin u:nth-child(1){left:28%;top:28%}.yin u:nth-child(2){left:72%;top:28%}.yin u:nth-child(3){left:28%;top:72%}.yin u:nth-child(4){left:72%;top:72%}
+.ctr{border:0;background:conic-gradient(from -45deg,var(--G) 0 25%,var(--Y) 0 50%,var(--B) 0 75%,var(--R) 0)}
+#tl,#pt{position:absolute;inset:0;pointer-events:none}#pt{z-index:60}
+.tk{position:absolute;width:6.6667%;height:6.6667%;transition:left .26s linear,top .26s linear,transform .25s}
+.tk.can{pointer-events:auto;cursor:pointer}
+.tb{position:absolute;inset:10%;border-radius:50% 50% 44% 44%;background:radial-gradient(circle at 32% 26%,#fffa 0 12%,#fff0 40%),var(--col);border:2px solid #0003;box-shadow:inset -3px -5px 0 #0002,0 4px 5px #0004;animation:idle 2.4s ease-in-out infinite}
+.tk.can .tb{animation:bob .55s ease-in-out infinite;box-shadow:0 0 0 3px #fff,0 0 14px 6px var(--col)}
+.e{position:absolute;top:30%;width:22%;height:28%;background:#fff;border-radius:50%;animation:blink 3.4s infinite}
+.e:nth-child(1){left:20%}.e:nth-child(2){right:20%}
+.e::after{content:"";position:absolute;width:55%;height:55%;background:#2a1f45;border-radius:50%;right:12%;bottom:12%}
+.m{position:absolute;left:36%;right:36%;top:64%;height:12%;border-bottom:2.5px solid #2a1f45;border-radius:0 0 50% 50%}
+.pt{position:absolute;font-size:clamp(10px,3.2vw,19px);line-height:1}
+#dock{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+#chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px}
+.chip{background:var(--card);border-radius:999px;padding:4px 10px;font-weight:700;border:3px solid transparent;font-size:14px}
+.chip.on{border-color:var(--c);animation:bob .8s ease-in-out infinite}
+#dw{width:70px;height:70px;perspective:420px;cursor:pointer;--pc:var(--R)}
+#dw.ready{animation:pulse 1s ease-in-out infinite}#dw.throw{animation:dthrow .95s}
+#dc{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.15,.8,.25,1);transform:rotateX(-20deg) rotateY(25deg)}
+.f{position:absolute;inset:0;background:linear-gradient(145deg,#fff,#e9e4f5);border-radius:14px;border:2px solid #0002;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:11px;backface-visibility:hidden}
+.f i{place-self:center;width:84%;aspect-ratio:1;border-radius:50%}
+.f i.on{background:radial-gradient(circle at 35% 30%,#fff8,#fff0 45%),var(--pc)}
+.f1{transform:translateZ(35px)}.f6{transform:rotateY(180deg) translateZ(35px)}.f2{transform:rotateY(90deg) translateZ(35px)}.f5{transform:rotateY(-90deg) translateZ(35px)}.f3{transform:rotateX(90deg) translateZ(35px)}.f4{transform:rotateX(-90deg) translateZ(35px)}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;background:var(--c,#7c5cff);color:#fff;box-shadow:0 4px 0 #0003;cursor:pointer;font-size:16px}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #0003}
+.ib{width:44px;height:44px;padding:0;background:var(--card);color:var(--ink);font-size:20px}
+#ov{position:fixed;inset:0;z-index:100;background:#1a0f3a99;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+#ov[hidden]{display:none}
+#cd{background:var(--card);border-radius:28px;padding:26px 24px;text-align:center;max-width:92vw;width:380px;box-shadow:0 10px 0 #0003;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+#cd h2{margin:0 0 6px;font-size:30px}#cd p{margin:4px 0 14px}
+.row{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.sel{background:var(--bg2);color:var(--ink)}.sel.on{background:#7c5cff;color:#fff}
+.bb{position:fixed;bottom:-90px;border-radius:50%;background:#fff6;z-index:-1;animation:rise linear infinite}
+.cf{position:fixed;top:0;z-index:200;pointer-events:none;font-size:24px}
+@keyframes idle{50%{transform:scale(1.05,.95) translateY(2%)}}
+@keyframes bob{50%{transform:translateY(-22%)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes pulse{50%{transform:scale(1.13) rotate(4deg)}}
+@keyframes dthrow{0%{transform:none}30%{transform:translateY(-70px) scale(1.4) rotate(-14deg)}55%{transform:none}70%{transform:translateY(-24px) scale(1.15) rotate(8deg)}85%{transform:scale(.93,1.07)}100%{transform:none}}
+@keyframes glow{50%{filter:brightness(1.25) saturate(1.2)}}
+@keyframes spin{50%{transform:rotate(360deg) scale(1.2)}}
+@keyframes rise{to{transform:translateY(-120vh) translateX(40px)}}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+@media(prefers-reduced-motion:reduce){.bb,h1 b{animation:none}}
+</style></head><body>
+<h1><b>🎲</b> Ludo Party</h1>
+<div id="msg">Welcome!</div>
+<div id="wrap"><div id="board"><div id="tl"></div><div id="pt"></div></div></div>
+<div id="dock"><div id="chips"></div><div id="dw" title="Roll"><div id="dc"></div></div>
+<div class="row"><button class="ib" id="mu" title="Sound">🔊</button><button class="ib" id="mn" title="Menu">🏠</button></div></div>
+<div id="ov"><div id="cd"></div></div>
+<script>
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms)),rnd=(a,b)=>a+Math.random()*(b-a);
+const COL=['R','G','Y','B'],NAME=['Red','Green','Yellow','Blue'],EMO=['🔴','🟢','🟡','🔵'],START=[0,13,26,39],SAFE=[0,8,13,21,26,34,39,47];
+const P=[],seg=(x,y,dx,dy,n)=>{for(let i=0;i<n;i++)P.push([x+dx*i,y+dy*i])};
+seg(1,6,1,0,5);seg(6,5,0,-1,6);seg(7,0,1,0,2);seg(8,1,0,1,5);seg(9,6,1,0,6);seg(14,7,0,1,2);seg(13,8,-1,0,5);seg(8,9,0,1,6);seg(7,14,-1,0,2);seg(6,13,0,-1,5);seg(5,8,-1,0,6);seg(0,7,0,-1,2);
+const HC=[[1,7,1,0],[7,1,0,1],[13,7,-1,0],[7,13,0,-1]],YO=[[0,0],[9,0],[9,9],[0,9]],FIN=[[6.45,7],[7,6.45],[7.55,7],[7,7.55]];
+/* ---------- sound ---------- */
+let AC,mute=false;const ac=()=>{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();return AC};
+function tone(f,d=.12,type='sine',v=.2,w=0,sl=0){if(mute)return;try{const a=ac(),t=a.currentTime+w,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*sl),t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+function noise(d,v,hp){if(mute)return;try{const a=ac(),n=a.sampleRate*d|0,b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);for(let i=0;i<n;i++)c[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='highpass';f.frequency.value=hp;g.gain.value=v;s.buffer=b;s.connect(f).connect(g).connect(a.destination);s.start()}catch(e){}}
+const arp=(fs,d,ty,v,gap)=>fs.forEach((f,i)=>tone(f,d,ty,v,i*gap));
+const sfx={tick:()=>noise(.035,.2,3000),thud:()=>{tone(110,.2,'sine',.4,0,.4);noise(.08,.15,500)},hop:k=>tone(380+k*45,.11,'triangle',.25,0,1.5),land:()=>tone(160,.07,'sine',.2,0,.5),
+out:()=>arp([523,659,784,1047],.14,'square',.1,.07),six:()=>arp([523,659,784,1047,1319],.18,'triangle',.22,.08),cap:()=>{tone(700,.5,'sawtooth',.16,0,.15);noise(.25,.2,800)},
+no:()=>{tone(260,.25,'sine',.25,0,.7);tone(200,.3,'sine',.25,.2,.7)},home:()=>arp([659,784,988,1319,1568],.2,'triangle',.25,.09),win:()=>arp([523,659,784,1047,784,1047,1319,1568],.25,'triangle',.28,.12),bell:()=>tone(880,.25,'sine',.12,0,1.2),pick:()=>tone(700,.08,'square',.1,0,1.4)};
+/* ---------- board ---------- */
+const bd=$('#board'),tl=$('#tl'),ptl=$('#pt'),ov=$('#ov'),cd=$('#cd'),dc=$('#dc'),dw=$('#dw');
+function add(cls,x,y,html='',w=1,h=1){const d=document.createElement('div');d.className='c '+cls;d.style.gridArea=`${y+1}/${x+1}/span ${h}/span ${w}`;d.innerHTML=html;bd.insertBefore(d,tl);return d}
+YO.forEach(([x,y],i)=>{add('yard k '+COL[i],x,y,'<div class=yin><u></u><u></u><u></u><u></u></div>',6,6).id='y'+i});
+P.forEach(([x,y],i)=>{const s=START.indexOf(i);add(s>=0?'k '+COL[s]:'',x,y,s>=0||SAFE.includes(i)?'★':'')});
+HC.forEach(([x,y,dx,dy],i)=>{for(let k=0;k<5;k++)add('k '+COL[i],x+dx*k,y+dy*k)});
+add('ctr',6,6,'',3,3);
+const PIP=[[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+dc.innerHTML=[1,2,3,4,5,6].map(n=>`<div class="f f${n}">${[...Array(9)].map((_,i)=>`<i class="${PIP[n].includes(i)?'on':''}"></i>`).join('')}</div>`).join('');
+for(let i=0;i<9;i++){const b=document.createElement('span'),s=rnd(20,70);b.className='bb';b.style.cssText=`left:${rnd(0,95)}vw;width:${s}px;height:${s}px;animation-duration:${rnd(9,18)}s;animation-delay:${-rnd(0,15)}s`;document.body.appendChild(b)}
+/* ---------- state ---------- */
+let A=[],CPU=[],T=[],cur=0,d=0,state='idle',cx=0,cy=0;
+const msg=t=>$('#msg').textContent=t;
+function cell(pl,p,i){if(p<0)return[YO[pl][0]+(i%2?3.5:1.5),YO[pl][1]+(i>1?3.5:1.5)];if(p<=50)return P[(START[pl]+p)%52];if(p<56){const[h,v,dx,dy]=HC[pl];return[h+dx*(p-51),v+dy*(p-51)]}const o=(i-1.5)*.2;return[FIN[pl][0]+(pl%2?o:0),FIN[pl][1]+(pl%2?0:o)]}
+function layout(){const g={};A.forEach(pl=>T[pl].forEach((t,i)=>{t.c=cell(pl,t.p,i);if(t.p>=0&&t.p<56)(g[t.c]=g[t.c]||[]).push(t)}));
+A.forEach(pl=>T[pl].forEach(t=>{const[x,y]=t.c,gr=g[t.c];let dx=0,dy=0,s=1;if(t.p==56)s=.62;else if(gr&&gr.length>1){const a=gr.indexOf(t)/gr.length*6.283+.8;dx=Math.cos(a)*.2;dy=Math.sin(a)*.2;s=.72}
+const st=t.el.style;st.left=x*100/15+'%';st.top=y*100/15+'%';st.transform=`translate(${dx*100}%,${dy*100}%) scale(${s})`;st.zIndex=Math.round(y*10)+(t.p<0?0:30)}))}
+function fx(x,y,n,list,dist=1.6,dur=850){const W=bd.clientWidth/15;for(let i=0;i<n;i++){const e=document.createElement('div');e.className='pt';e.textContent=list[i%list.length];e.style.left=(x+.5)*100/15+'%';e.style.top=(y+.5)*100/15+'%';ptl.appendChild(e);const a=rnd(0,6.28),r=rnd(.4,1)*dist*W;e.animate([{transform:'translate(-50%,-50%) scale(.3)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*r}px),calc(-50% + ${Math.sin(a)*r-W*.6}px)) scale(${rnd(.8,1.6)}) rotate(${rnd(-240,240)}deg)`,opacity:0}],{duration:dur,easing:'ease-out'}).onfinish=()=>e.remove()}}
+function confetti(n=70){for(let i=0;i<n;i++){const e=document.createElement('div');e.className='cf';e.textContent=['🎉','✨','⭐','🎈','💖','🎊'][i%6];e.style.left=rnd(0,96)+'vw';document.body.appendChild(e);e.animate([{transform:'translateY(-10vh) rotate(0)'},{transform:`translateY(110vh) rotate(${rnd(-720,720)}deg)`}],{duration:rnd(1800,3800),delay:rnd(0,900),easing:'linear',fill:'backwards'}).onfinish=()=>e.remove()}}
+/* ---------- movement styles ---------- */
+const ST=[
+[{transform:'scale(1.15,.8)'},{transform:'translateY(-95%) scale(.88,1.18)',offset:.5},{transform:'scale(1.18,.8)',offset:.85},{transform:'none'}],
+[{transform:'none'},{transform:'translateY(-85%) rotate(180deg)',offset:.5},{transform:'rotate(360deg)'}],
+[{transform:'none'},{transform:'translateY(-90%) rotateY(180deg)',offset:.5},{transform:'rotateY(360deg)'}],
+[{transform:'rotate(-20deg)'},{transform:'translateY(-55%) rotate(20deg)',offset:.5},{transform:'rotate(-8deg)',offset:.8},{transform:'none'}],
+[{transform:'none'},{transform:'translateY(-100%) perspective(200px) rotateX(360deg)',offset:.5},{transform:'none'}],
+[{transform:'scale(1)'},{transform:'translateY(-60%) scale(1.4,.7)',offset:.3},{transform:'translateY(-90%) scale(.7,1.4)',offset:.6},{transform:'scale(1.2,.85)',offset:.9},{transform:'none'}],
+[{transform:'translateX(-12%) rotate(-25deg)'},{transform:'translateY(-80%) translateX(12%) rotate(25deg) scale(1.1)',offset:.5},{transform:'none'}]];
+const OUT=[{transform:'scale(.5)'},{transform:'translateY(-150%) rotate(360deg) scale(1.35)',offset:.5},{transform:'scale(.9,1.2)',offset:.8},{transform:'none'}];
+const DANCE=[{transform:'none'},{transform:'translateY(-90%) rotate(-30deg) scale(1.2)'},{transform:'scale(1.3,.7)'},{transform:'translateY(-90%) rotate(30deg) scale(1.2)'},{transform:'rotate(360deg) scale(1.4)'},{transform:'translateY(-60%) scale(1.2)'},{transform:'none'}];
+const bod=t=>t.el.firstChild;
+async function hop(t,k){bod(t).animate(ST[rnd(0,ST.length)|0],{duration:270,easing:'ease-in-out'});sfx.hop(k);setTimeout(sfx.land,150);fx(t.c[0],t.c[1],2,['•','✦'],.9,500);await sleep(280)}
+async function back(v){const b=bod(v);sfx.cap();fx(v.c[0],v.c[1],8,['💥','⭐','💫'],2);b.animate([{transform:'none'},{transform:'rotate(720deg) scale(1.5)',offset:.4},{transform:'rotate(1440deg) scale(.2)',opacity:.3}],{duration:650});await sleep(620);v.p=-1;v.el.style.transition='left .7s cubic-bezier(.4,-.4,.4,1.3),top .7s cubic-bezier(.4,-.4,.4,1.3),transform .3s';layout();b.animate([{transform:'scale(.2)'},{transform:'scale(1.3,.8)',offset:.7},{transform:'none'}],{duration:750});await sleep(780);v.el.style.transition=''}
+async function move(pl,i){const t=T[pl][i];let bonus=0;
+if(t.p<0){t.p=0;layout();sfx.out();bod(t).animate(OUT,{duration:650,easing:'ease-out'});fx(t.c[0],t.c[1],8,['✨','⭐','💫'],1.8);await sleep(700)}
+else for(let s=0;s<d;s++){t.p++;layout();await hop(t,s)}
+if(t.p==56){bonus=1;sfx.home();bod(t).animate(DANCE,{duration:1200,easing:'ease-in-out'});fx(t.c[0],t.c[1],14,['🎉','⭐','💖','✨'],2.8,1200);await sleep(1250)}
+else if(t.p<=50){const idx=(START[pl]+t.p)%52;if(!SAFE.includes(idx)){const vs=[];A.forEach(o=>o!=pl&&T[o].forEach(v=>{if(v.p>=0&&v.p<=50&&(START[o]+v.p)%52==idx)vs.push(v)}));
+if(vs.length){bonus=1;bod(t).animate(DANCE.slice(0,5),{duration:900});await Promise.all(vs.map(back))}}}
+return bonus}
+/* ---------- dice ---------- */
+async function rollDice(){const v=1+Math.random()*6|0,g={1:[0,0],2:[0,-90],3:[-90,0],4:[90,0],5:[0,90],6:[0,180]}[v];
+cx=360*(Math.round(cx/360)+2+(Math.random()*2|0))+g[0];cy=360*(Math.round(cy/360)+2+(Math.random()*2|0))+g[1];
+dw.classList.remove('ready','throw');void dw.offsetWidth;dw.classList.add('throw');dc.style.transform=`rotateX(${cx}deg) rotateY(${cy}deg)`;
+const iv=setInterval(sfx.tick,95);await sleep(1000);clearInterval(iv);sfx.thud();dw.classList.remove('throw');return v}
+/* ---------- turns ---------- */
+const ok=(pl,i)=>{const p=T[pl][i].p;return p<0?d==6:p+d<=56};
+function score(pl,i){const p=T[pl][i].p;let s=Math.random();if(p<0)return 50+s;const n=p+d;if(n==56)return 100+s;if(n<=50){const idx=(START[pl]+n)%52;if(!SAFE.includes(idx)&&A.some(o=>o!=pl&&T[o].some(v=>v.p>=0&&v.p<=50&&(START[o]+v.p)%52==idx)))return 80+s;if(SAFE.includes(idx))s+=15}return s+n*.2}
+function chips(){$('#chips').innerHTML=A.map(pl=>`<span class="chip ${COL[pl]} ${pl==cur?'on':''}" style="--c:var(--${COL[pl]})">${EMO[pl]} ${T[pl].filter(t=>t.p==56).length}/4 🏠</span>`).join('');
+[0,1,2,3].forEach(i=>$('#y'+i).classList.toggle('on',i==cur))}
+async function turn(){state='roll';dw.style.setProperty('--pc',`var(--${COL[cur]})`);chips();sfx.bell();const cpu=CPU.includes(cur);msg(`${EMO[cur]} ${NAME[cur]}'s turn — ${cpu?'rolling…':'tap the dice!'}`);if(cpu){await sleep(800);roll()}else dw.classList.add('ready')}
+async function roll(){if(state!=='roll')return;state='rolling';ac();d=await rollDice();if(d==6){sfx.six();fx(7,7,8,['⭐','✨','🎉'],3)}
+const m=[0,1,2,3].filter(i=>ok(cur,i));
+if(!m.length){msg(`${EMO[cur]} Rolled ${d} — no move!`);sfx.no();await sleep(1100);return next(false)}
+let ch;if(CPU.includes(cur)){ch=m.map(i=>[score(cur,i),i]).sort((a,b)=>b[0]-a[0])[0][1];msg(`${EMO[cur]} rolled ${d}`);await sleep(600)}
+else if(m.length==1||m.every(i=>T[cur][i].p<0)){ch=m[0];msg(`${EMO[cur]} Rolled ${d}!`);await sleep(500)}
+else{state='pick';msg(`${EMO[cur]} Rolled ${d}! Tap a token to move`);m.forEach(i=>T[cur][i].el.classList.add('can'));return}
+act(ch)}
+function pick(pl,i){if(state!=='pick'||pl!==cur||!ok(pl,i))return;sfx.pick();act(i)}
+async function act(i){state='moving';T[cur].forEach(t=>t.el.classList.remove('can'));const b=await move(cur,i);chips();
+if(T[cur].every(t=>t.p==56))return win(cur);
+if(b&&d!=6)msg(`${EMO[cur]} Bonus roll! 🎁`);await sleep(350);next(b||d==6)}
+function next(extra){if(extra){if(d==6)msg(`${EMO[cur]} A six! Roll again!`)}else cur=A[(A.indexOf(cur)+1)%A.length];turn()}
+function win(pl){state='over';sfx.win();confetti(110);setTimeout(()=>confetti(80),1500);
+cd.innerHTML=`<h2>🏆 ${NAME[pl]} wins!</h2><p>${EMO[pl]} All four buddies made it home!</p><div class="row"><button onclick="menu()">Play again</button></div>`;ov.hidden=false}
+function start(n,cpu){A=n==2?[0,2]:n==3?[0,1,2]:[0,1,2,3];CPU=cpu?A.slice(1):[];tl.innerHTML='';T=[];
+A.forEach(pl=>{T[pl]=[0,1,2,3].map(i=>{const el=document.createElement('div');el.className='tk';el.style.setProperty('--col',`var(--${COL[pl]})`);el.innerHTML='<div class=tb><i class=e></i><i class=e></i><i class=m></i></div>';el.firstChild.style.animationDelay=-rnd(0,2.4)+'s';el.onclick=()=>pick(pl,i);tl.appendChild(el);return{p:-1,el}})});
+[0,1,2,3].forEach(i=>$('#y'+i).classList.toggle('off',!A.includes(i)));cur=A[0];d=0;layout();ov.hidden=true;turn()}
+let N=4;
+function menu(){cd.innerHTML=`<h2>🎲 Ludo Party</h2><p>Roll a 6 to free your buddies, race them home, and bump rivals back to start!</p><div class="row">${[2,3,4].map(n=>`<button class="sel ${n==N?'on':''}" onclick="N=${n};menu()">${n} players</button>`).join('')}</div><div class="row"><button onclick="start(N,false)">👫 Pass &amp; play</button><button style="--c:#ff7a3d" onclick="start(N,true)">🤖 vs computer</button></div>`;ov.hidden=false}
+dw.onclick=()=>{if(state==='roll'&&!CPU.includes(cur))roll()};
+addEventListener('keydown',e=>{if(e.code=='Space'||e.code=='Enter'){if(!ov.hidden)return;e.preventDefault();dw.onclick()}});
+$('#mu').onclick=function(){mute=!mute;this.textContent=mute?'🔇':'🔊';if(!mute)sfx.pick()};
+$('#mn').onclick=menu;
+menu();
+</script></body></html>
